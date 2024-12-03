@@ -1,0 +1,110 @@
+#include <iostream>
+#include <string>
+
+// Account class handles user account-related information
+class Account {
+private:
+    int balance;
+
+public:
+    Account(int initial_balance)
+        : balance(initial_balance) {}
+
+    int getBalance() {
+        return balance;
+    }
+
+    bool withdraw(int amount) {
+        if (amount <= balance) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    void deposit(int amount) {
+        balance += amount;
+    }
+};
+
+// ATM class manages ATM operations and states
+class ATM {
+private:
+    enum State { IDLE, CARD_INSERTED, TRANSACTION_SELECTED };
+    State currentState;
+    Account* currentAccount;
+
+public:
+    ATM() : currentState(IDLE), currentAccount(nullptr) {}
+
+    void insertCard(Account* account) {
+        currentState = CARD_INSERTED;
+        currentAccount = account;
+        std::cout << "Card inserted.\n";
+    }
+
+    void selectTransaction(int choice) {
+        if (currentState == CARD_INSERTED) {
+            if (choice == 1) {
+                int amount;
+                std::cout << "Enter amount to withdraw: ";
+                std::cin >> amount;
+                if (currentAccount->withdraw(amount)) {
+                    std::cout << "Please collect your cash.\n";
+                } else {
+                    std::cout << "Insufficient balance.\n";
+                }
+            } else if (choice == 2) {
+                int amount;
+                std::cout << "Enter amount to deposit: ";
+                std::cin >> amount;
+                currentAccount->deposit(amount);
+                std::cout << "Amount deposited.\n";
+            } else if (choice == 3) {
+                std::cout << "Your balance is: " << currentAccount->getBalance() << "\n";
+            }
+            currentState = TRANSACTION_SELECTED;
+        }
+    }
+
+    void endSession() {
+        currentState = IDLE;
+        currentAccount = nullptr;
+        std::cout << "Session ended. Thank you.\n";
+    }
+};
+
+// Main function demonstrates how the ATM might be used
+int main() {
+    // Dummy data for the example
+    Account account1(5000);  // Initial balance is 5000
+    ATM atm;
+
+    int choice;
+
+    // Start session
+    atm.insertCard(&account1);
+    std::cout << "Welcome to the ATM!\n";
+
+    do {
+        // Display transaction options after the card is inserted
+        std::cout << "\nSelect transaction: 1. Withdraw 2. Deposit 3. Balance 4. Exit\n";
+        std::cin >> choice;
+        
+        if (choice == 4) {
+            atm.endSession();
+            break; // Exit the transaction loop if the user selects '4'
+        }
+
+        atm.selectTransaction(choice);  //perform selected transaction
+        break;  //break the loop after any transation
+        
+    } while (true);  // Keep asking until the user selects "Exit"
+
+    // Show the remaining balance at the end of the session
+    std::cout << "Remaining balance in your account: " << account1.getBalance() << "\n";
+    
+   atm.endSession();  // End the session
+
+    return 0;
+}
